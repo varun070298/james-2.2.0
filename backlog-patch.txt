@@ -1,0 +1,63 @@
+? src/java/org/apache/james/transport/mailets/LogHeaders.java
+? src/xdocs/fixcrlf-1922741060
+Index: src/java/org/apache/james/core/AbstractJamesService.java
+===================================================================
+RCS file: /home/cvs/james-server/src/java/org/apache/james/core/AbstractJamesService.java,v
+retrieving revision 1.4.4.5
+diff -u -r1.4.4.5 AbstractJamesService.java
+--- src/java/org/apache/james/core/AbstractJamesService.java	15 Mar 2004 03:54:15 -0000	1.4.4.5
++++ src/java/org/apache/james/core/AbstractJamesService.java	12 May 2004 17:42:35 -0000
+@@ -59,6 +59,16 @@
+     protected static final String TIMEOUT_NAME = "connectiontimeout";
+ 
+     /**
++     * The default value for the connection backlog.
++     */
++    protected static final int DEFAULT_BACKLOG = 5;
++
++    /**
++     * The name of the parameter defining the connection backlog.
++     */
++    protected static final String BACKLOG_NAME = "connectionBacklog";
++
++    /**
+      * The name of the parameter defining the service hello name.
+      */
+     public static final String HELLO_NAME = "helloName";
+@@ -120,6 +130,11 @@
+     protected int timeout;
+ 
+     /**
++     * The connection backlog.
++     */
++    protected int backlog;
++
++    /**
+      * The hello name for the service.
+      */
+     protected String helloName;
+@@ -252,6 +267,15 @@
+                     .append(timeout);
+         getLogger().info(infoBuffer.toString());
+ 
++        backlog = conf.getChild(BACKLOG_NAME).getValueAsInteger(DEFAULT_BACKLOG);
++
++        infoBuffer =
++                    new StringBuffer(64)
++                    .append(getServiceType())
++                    .append(" connection backlog is: ")
++                    .append(backlog);
++        getLogger().info(infoBuffer.toString());
++
+         final String location = "generated:" + getServiceType();
+ 
+         if (connectionManager instanceof JamesConnectionManager) {
+@@ -300,7 +324,7 @@
+         }
+ 
+         ServerSocketFactory factory = socketManager.getServerSocketFactory(serverSocketType);
+-        ServerSocket serverSocket = factory.createServerSocket(port, 5, bindTo);
++        ServerSocket serverSocket = factory.createServerSocket(port, backlog, bindTo);
+     
+         if (null == connectionName) {
+             final StringBuffer sb = new StringBuffer();
